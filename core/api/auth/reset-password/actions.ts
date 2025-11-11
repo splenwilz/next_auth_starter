@@ -1,23 +1,13 @@
 'use server'
 
 import { resetPassword } from "./services"
-import type { ResetPasswordRequest } from "./types"
+import { ResetPasswordRequestSchema, type ResetPasswordRequest } from "./types"
 import type { AuthResponse } from "../types"
-import { z } from "zod"
 
 export type ResetPasswordActionResult =
     | { success: true; data: AuthResponse }
     | { success: false; error: string }
     | null
-
-const schema = z.object({
-    token: z.string().min(1, { message: 'Token is required' }),
-    new_password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
-    confirm_new_password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
-}).refine((data) => data.new_password === data.confirm_new_password, {
-    message: 'Passwords do not match',
-    path: ['confirm_new_password'],
-})
 
 export async function resetPasswordAction(
     _prevState: ResetPasswordActionResult | null,
@@ -29,7 +19,7 @@ export async function resetPasswordAction(
     const confirm_new_password = formData.get('confirm_new_password')?.toString() ?? ''
 
     // Validate using Zod schema
-    const validationResult = schema.safeParse({
+    const validationResult = ResetPasswordRequestSchema.safeParse({
         token,
         new_password,
         confirm_new_password,

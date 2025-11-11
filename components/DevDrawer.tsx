@@ -36,12 +36,14 @@ export function DevDrawer() {
         setIsClearing(true)
         try {
             const result = await devClearRateLimit(identifier)
-            toast.success(result.message)
-            setIdentifier('')
+            if (result.success) {
+                toast.success(result.message)
+                setIdentifier('')
+            } else {
+                toast.error(result.message)
+            }
         } catch (error) {
             toast.error(`Failed to clear rate limit: ${error}`)
-        } finally {
-            setIsClearing(false)
         }
     }
 
@@ -49,7 +51,11 @@ export function DevDrawer() {
         setIsClearing(true)
         try {
             const result = await devClearAllRateLimits()
-            toast.success(result.message)
+            if (result.success) {
+                toast.success(result.message)
+            } else {
+                toast.error(result.message)
+            }
         } catch (error) {
             toast.error(`Failed to clear all rate limits: ${error}`)
         } finally {

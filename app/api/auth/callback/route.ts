@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { oauthCallback } from '@/core/api/auth/oauth/services'
 import { setAuthCookies } from '@/lib/auth'
+import { ApiError } from '@/core/api/client'
 
 /**
  * OAuth callback route handler
@@ -41,19 +42,17 @@ export async function GET(req: NextRequest) {
         if (error instanceof Error) {
             errorMessage = error.message
 
-            // Check if it's an ApiError with status code
-            if ('status' in error && typeof error.status === 'number') {
-                const apiError = error as { status: number; message: string }
-
+            // Use instanceof for type-safe ApiError detection
+            if (error instanceof ApiError) {
                 // Provide more specific error messages based on status
-                if (apiError.status === 400) {
+                if (error.status === 400) {
                     errorMessage = 'Invalid authorization code. Please try signing in again.'
-                } else if (apiError.status === 401) {
+                } else if (error.status === 401) {
                     errorMessage = 'Authentication failed. Please try signing in again.'
-                } else if (apiError.status >= 500) {
+                } else if (error.status >= 500) {
                     errorMessage = 'Server error occurred. Please try again later.'
                 } else {
-                    errorMessage = apiError.message || errorMessage
+                    errorMessage = error.message || errorMessage
                 }
             }
         }

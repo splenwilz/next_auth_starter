@@ -76,6 +76,14 @@ export default function SigninForm() {
         // Extract pending_authentication_token and add it to redirect URL
         const emailVerificationResponse = signinResponse as EmailVerificationResponse
         const token = emailVerificationResponse.pending_authentication_token
+
+        // Store email in sessionStorage for confirm email page
+        // This allows the confirm email page to display the actual email address
+        const email = form.getValues('email')
+        if (typeof window !== 'undefined' && email) {
+          sessionStorage.setItem('pending_verification_email', email)
+        }
+
         router.push(`/confirm-email?token=${encodeURIComponent(token)}`)
       } else {
         // If no email verification required, redirect to dashboard
@@ -86,7 +94,7 @@ export default function SigninForm() {
       // Show error toast
       toast.error(state.error)
     }
-  }, [state, router])
+  }, [state, router, form])
 
   return (
     <Form {...form}>

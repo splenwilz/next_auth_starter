@@ -116,9 +116,8 @@ export default function ConfirmEmail() {
             Email verified successfully! Please sign in to continue.
           </p>
 
-          {/* Loading indicator */}
           <div className="flex flex-col items-center space-y-4 mb-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-custom-base-green"></div>
+            <div className="animate-bounce rounded-full h-8 w-8 border-b-2 border-custom-base-green"></div>
             <p className="text-sm text-gray-500">
               Your account is now active!
             </p>

@@ -4,6 +4,7 @@ import { oauthCallback } from "./services"
 import type { OAuthCallbackRequest } from "./types"
 import type { AuthResponse } from "../types"
 import { setAuthCookies } from "@/lib/auth"
+import { ApiError } from "@/core/api/client"
 
 export type OAuthCallbackActionResult =
     | { success: true; data: AuthResponse }
@@ -46,24 +47,23 @@ export async function oauthCallbackAction(
         if (error instanceof Error) {
             errorMessage = error.message
 
-            // Check if it's an ApiError with status code
-            if ('status' in error && typeof error.status === 'number') {
-                const apiError = error as { status: number; message: string }
+            // Use instanceof for type-safe ApiError detection
+            if (error instanceof ApiError) {
                 console.error('[AUTH] API Error details:', {
-                    status: apiError.status,
-                    message: apiError.message,
+                    status: error.status,
+                    message: error.message,
                     code: data.code,
                 })
 
                 // Provide more specific error messages based on status
-                if (apiError.status === 400) {
+                if (error.status === 400) {
                     errorMessage = 'Invalid authorization code. Please try signing in again.'
-                } else if (apiError.status === 401) {
+                } else if (error.status === 401) {
                     errorMessage = 'Authentication failed. Please try signing in again.'
-                } else if (apiError.status >= 500) {
+                } else if (error.status >= 500) {
                     errorMessage = 'Server error occurred. Please try again later.'
                 } else {
-                    errorMessage = apiError.message || errorMessage
+                    errorMessage = error.message || errorMessage
                 }
             }
         }
