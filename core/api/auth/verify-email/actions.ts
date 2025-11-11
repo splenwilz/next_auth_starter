@@ -1,4 +1,5 @@
 'use server'
+import { z } from 'zod'
 
 import type { AuthResponse } from '../types'
 import { verifyEmail } from './services'
@@ -11,6 +12,10 @@ export type VerifyEmailActionResult =
     | { success: true; data: AuthResponse }
     | { success: false; error: string }
 
+const schema = z.object({
+    token: z.string().min(1, { message: 'Token is required' }),
+    code: z.string().min(6, { message: 'Code must be 6 digits' }),
+})
 /**
  * Server action for email verification
  * 
@@ -32,6 +37,19 @@ export async function verifyEmailAction(
                 error: 'Token and code are required',
             }
         }
+
+        const validationResult = schema.safeParse({
+            token,
+            code,
+        })
+        if (!validationResult.success) {
+            return {
+                success: false,
+                error: validationResult.error.issues[0]?.message || 'Validation failed',
+            }
+        }
+
+
 
         const requestBody: VerifyEmailRequest = {
             pending_authentication_token: token,

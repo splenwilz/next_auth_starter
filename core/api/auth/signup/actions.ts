@@ -79,6 +79,12 @@ export async function signupAction(
                 error: 'Password must be at least 8 characters',
             }
         }
+        if (password.length > 50) {
+            return {
+                success: false,
+                error: 'Password must be less than 50 characters',
+            }
+        }
 
         if (password !== confirmPassword) {
             return {

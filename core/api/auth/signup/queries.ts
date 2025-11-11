@@ -1,6 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createMutationHook } from "../../utils/query-helpers";
 import { signup } from "./services";
 import type { SignupRequest } from "./types";
+import type { AuthResponse } from "../types";
 
 /**
  * Hook to sign up a new user
@@ -12,16 +13,5 @@ import type { SignupRequest } from "./types";
  * @see https://tanstack.com/query/latest/docs/react/guides/migrating-to-v5
  * @see https://tanstack.com/query/latest/docs/react/reference/useMutation
  */
-export function useSignup() {
-  const queryClient = useQueryClient();
-  
-  const mutation = useMutation({
-    mutationFn: (data: SignupRequest) => signup(data),
-  });
-
-  return {
-    ...mutation,
-    queryClient,
-  };
-}
+export const useSignup = createMutationHook<SignupRequest, AuthResponse>(signup);
 

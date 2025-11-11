@@ -1,6 +1,6 @@
-  import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createMutationHook } from "../../utils/query-helpers";
   import { oauth } from "./services";
-  import type { OAuthRequest } from "./types";
+import type { OAuthRequest, OAuthResponse } from "./types";
 
 /**
  * Hook to initiate OAuth flow
@@ -12,16 +12,5 @@
  * @see https://tanstack.com/query/latest/docs/react/guides/migrating-to-v5
  * @see https://tanstack.com/query/latest/docs/react/reference/useMutation
  */
-export function useOAuth() {
-  const queryClient = useQueryClient();
-  
-  const mutation = useMutation({
-    mutationFn: (data: OAuthRequest) => oauth(data),
-  });
-
-  return {
-    ...mutation,
-    queryClient,
-  };
-}
+export const useOAuth = createMutationHook<OAuthRequest, OAuthResponse>(oauth);
 

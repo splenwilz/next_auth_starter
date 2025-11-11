@@ -6,12 +6,24 @@ import type { RefreshTokenResponse } from '@/core/api/auth/refresh/types'
  * Get session from cookies
  * Returns user data if authenticated, null otherwise
  * 
+ * Security: Validates that access token exists before trusting user cookie
+ * This prevents forged auth_user cookies from bypassing authentication
+ * 
  * @see https://nextjs.org/docs/app/api-reference/functions/cookies
  */
 export async function getSession(): Promise<{ user: AuthUser } | null> {
     const cookieStore = await cookies()
-    const userCookie = cookieStore.get('auth_user')?.value
 
+    // First verify access token exists (can't be forged - httpOnly)
+    // This ensures the session is actually valid
+    const accessToken = cookieStore.get('auth_access_token')?.value
+    if (!accessToken) {
+        return null
+    }
+
+    // Only trust user cookie if access token is present
+    // The access token is httpOnly and cannot be forged
+    const userCookie = cookieStore.get('auth_user')?.value
     if (!userCookie) {
         return null
     }
@@ -60,9 +72,11 @@ export async function setAuthCookies(authData: AuthResponse): Promise<void> {
         path: '/',
     })
 
-    // Set user data (non-HTTP-only for client access)
+    // Set user data (HTTP-only for security)
+    // Note: User data is only needed server-side for getSession()
+    // Client components should fetch user data via API if needed
     cookieStore.set('auth_user', JSON.stringify(authData.user), {
-        httpOnly: false,
+        httpOnly: true, // Prevent client-side tampering
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7, // 7 days

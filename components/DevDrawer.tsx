@@ -65,7 +65,7 @@ export function DevDrawer() {
                     size="icon"
                     className="fixed top-4 left-4 z-50 rounded-full shadow-lg"
                 >
-                    <Bug className="h-44 w-44" />
+                    <Bug className="h-5 w-5" />
                 </Button>
             </DrawerTrigger>
             <DrawerContent>

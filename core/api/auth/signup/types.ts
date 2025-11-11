@@ -12,7 +12,7 @@ export const SignupRequestSchema = z.object({
   confirm_password: z.string().min(8),
 }).refine((data) => data.password === data.confirm_password, {
   message: "Passwords don't match",
-  path: ["confirmPassword"], // This will show the error on confirmPassword field
+  path: ["confirm_password"], // This will show the error on confirm_password field
 });
 
 export type SignupRequest = z.infer<typeof SignupRequestSchema>;

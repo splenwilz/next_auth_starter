@@ -223,9 +223,8 @@ describe('apiClient', () => {
       expect(result).toEqual({ data: 'success' })
     })
 
-    it('should redirect to signin if refresh fails', async () => {
+    it('should throw ApiError if refresh fails', async () => {
       global.window = mockWindow as unknown as Window & typeof globalThis
-      const locationSpy = vi.spyOn(mockWindow.location, 'href', 'set')
 
       // First call: 401 with expired token
       mockFetch
@@ -247,11 +246,16 @@ describe('apiClient', () => {
           status: 401,
         })
 
-      await expect(apiClient('/api/v1/users')).rejects.toThrow(
-        'Session expired. Please sign in again.'
-      )
-
-      expect(locationSpy).toHaveBeenCalledWith('/signin')
+      // Should throw ApiError with isSessionExpired flag - calling code handles navigation
+      try {
+        await apiClient('/api/v1/users')
+        expect.fail('Should have thrown ApiError')
+      } catch (error) {
+        expect(error).toBeInstanceOf(ApiError)
+        expect((error as ApiError).status).toBe(401)
+        expect((error as ApiError).message).toBe('Session expired. Please sign in again.')
+        expect((error as ApiError).isSessionExpired).toBe(true)
+      }
     })
 
     it('should not refresh on non-expiry 401 errors', async () => {
@@ -270,7 +274,15 @@ describe('apiClient', () => {
         },
       })
 
-      await expect(apiClient('/api/v1/users')).rejects.toThrow(ApiError)
+      try {
+        await apiClient('/api/v1/users')
+        expect.fail('Should have thrown ApiError')
+      } catch (error) {
+        expect(error).toBeInstanceOf(ApiError)
+        expect((error as ApiError).status).toBe(401)
+        // Non-expiry 401 errors should not have isSessionExpired flag
+        expect((error as ApiError).isSessionExpired).toBe(false)
+      }
 
       // Should not call refresh
       expect(mockFetch).toHaveBeenCalledTimes(1)

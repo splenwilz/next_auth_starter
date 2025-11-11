@@ -70,6 +70,14 @@ export async function signinAction(
             }
         }
 
+        if (password.length > 50) {
+            return {
+                success: false,
+                error: 'Password must be less than 50 characters',
+            }
+        }
+
+
         // Rate limiting check
         const rateLimit = await checkRateLimit(clientId)
 
@@ -82,7 +90,6 @@ export async function signinAction(
             // Log security event
             console.warn('[SECURITY] Rate limit exceeded', {
                 clientId,
-                email,
                 timestamp: new Date().toISOString(),
                 resetTime: new Date(rateLimit.resetTime).toISOString(),
             })
@@ -112,7 +119,6 @@ export async function signinAction(
         // Log successful signin (without sensitive data)
         const duration = Date.now() - startTime
         console.log('[AUTH] Successful signin', {
-            email,
             duration: `${duration}ms`,
             timestamp: new Date().toISOString(),
             requiresVerification: 'requires_verification' in signinResponse
@@ -140,7 +146,6 @@ export async function signinAction(
         const duration = Date.now() - startTime
         console.error('[AUTH] Failed signin attempt', {
             clientId,
-            email: formData.get('email')?.toString(),
             error: errorMessage,
             duration: `${duration}ms`,
             timestamp: new Date().toISOString(),

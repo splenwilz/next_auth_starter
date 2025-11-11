@@ -1,6 +1,7 @@
-  import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createMutationHook } from "../../utils/query-helpers";
   import { verifyEmail } from "./services";
   import type { VerifyEmailRequest } from "./types";
+import type { AuthResponse } from "../types";
 
 /**
  * Hook to verify email of an existing user
@@ -12,16 +13,5 @@
  * @see https://tanstack.com/query/latest/docs/react/guides/migrating-to-v5
  * @see https://tanstack.com/query/latest/docs/react/reference/useMutation
  */
-export function useVerifyEmail() {
-  const queryClient = useQueryClient();
-  
-  const mutation = useMutation({
-    mutationFn: (data: VerifyEmailRequest) => verifyEmail(data),
-  });
-
-  return {
-    ...mutation,
-    queryClient,
-  };
-}
+export const useVerifyEmail = createMutationHook<VerifyEmailRequest, AuthResponse>(verifyEmail);
 

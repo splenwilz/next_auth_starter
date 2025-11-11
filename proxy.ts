@@ -34,12 +34,13 @@ export function proxy(request: NextRequest) {
     // Check if route is protected
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
 
-    // Check authentication by verifying user data exists
-    // Using auth_user instead of auth_access_token because:
-    // - auth_user contains actual user data (more reliable check)
-    // - auth_access_token is just a token string (can't validate it in middleware)
+    // Check authentication by verifying both access token and user cookie exist
+    // Security: Access token is httpOnly and cannot be forged
+    // This prevents forged auth_user cookies from bypassing authentication
+    const accessToken = request.cookies.get('auth_access_token')?.value
     const userCookie = request.cookies.get('auth_user')?.value
-    const isAuthenticated = !!userCookie
+    // Both must exist for authentication (access token prevents cookie forgery)
+    const isAuthenticated = !!(accessToken && userCookie)
 
     // Redirect unauthenticated users trying to access protected routes
     if (isProtectedRoute && !isAuthenticated) {

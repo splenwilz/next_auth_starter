@@ -6,6 +6,8 @@
 /**
  * User object structure returned from authentication endpoints
  */
+
+
 export interface AuthUser {
   object: string;
   id: string;

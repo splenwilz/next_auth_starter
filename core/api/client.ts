@@ -5,7 +5,8 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
-    public originalError?: unknown
+    public originalError?: unknown,
+    public isSessionExpired: boolean = false
   ) {
     super(message);
     this.name = "ApiError";
@@ -49,7 +50,7 @@ function isExpiredByHeader(res: Response): boolean {
 
   // FastAPI example: Bearer error="invalid_token", error_description="The access token expired"
   const isInvalidToken = lower.includes('error="invalid_token"')
-  const isExpiredDesc = lower.includes('error_description="the access token expired"')
+  const isExpiredDesc = lower.includes('expired')
 
   // Optional custom header support if you ever add it
   const customExpired = res.headers.get('X-Token-Expired') === 'true'
@@ -121,7 +122,26 @@ export async function apiClient<T>(url: string, options?: RequestInit): Promise<
       headers,
       ...options,
     }
-    return fetch(targetUrl, fetchOptions)
+
+    try {
+      return await fetch(targetUrl, fetchOptions)
+    } catch (fetchError) {
+      // Handle network errors (connection refused, DNS errors, etc.)
+      console.error('[API] Network error:', {
+        url: targetUrl,
+        error: fetchError instanceof Error ? fetchError.message : String(fetchError),
+        isClient,
+        apiBaseUrl,
+      })
+
+      throw new ApiError(
+        0,
+        fetchError instanceof Error
+          ? `Network error: ${fetchError.message}`
+          : 'Network error: Failed to connect to server',
+        fetchError
+      )
+    }
   }
 
   let res = await makeRequest()
@@ -132,10 +152,10 @@ export async function apiClient<T>(url: string, options?: RequestInit): Promise<
       if (refreshed) {
         res = await makeRequest()
       } else {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/signin'
-        }
-        throw new ApiError(401, 'Session expired. Please sign in again.')
+        // Let calling code handle navigation based on the error
+        // This keeps apiClient focused on API communication
+        // Mark as session expired so handlers can distinguish from other 401 errors
+        throw new ApiError(401, 'Session expired. Please sign in again.', undefined, true)
       }
     } else {
       const msg = await parseErrorResponse(res)
@@ -145,6 +165,17 @@ export async function apiClient<T>(url: string, options?: RequestInit): Promise<
 
   if (!res.ok) {
     const errorMessage = await parseErrorResponse(res);
+
+    // Log server errors for debugging
+    if (res.status >= 500) {
+      console.error('[API] Server error:', {
+        status: res.status,
+        statusText: res.statusText,
+        url,
+        message: errorMessage,
+      })
+    }
+
     throw new ApiError(res.status, errorMessage);
   }
 

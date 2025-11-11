@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 export default function Signin() {
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center min-h-screen">
       <div className="lg:w-1/2 h-full hidden lg:flex flex-col">
         <div className="flex justify-center items-center h-[65vh]">
           <Image
@@ -18,7 +18,6 @@ export default function Signin() {
         <div className="flex flex-col p-14 h-[35vh] bg-custom-grey-900 border-t-4 border-t-custom-base-green">
           <Image
             src="/logo/humanline.png"
-            className=""
             alt="logo"
             width={150}
             height={150}
