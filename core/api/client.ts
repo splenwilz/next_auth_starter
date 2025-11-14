@@ -93,24 +93,31 @@ export async function apiClient<T>(url: string, options?: RequestInit): Promise<
   const isClient = typeof window !== 'undefined'
   const apiBaseUrl = getApiBaseUrl()
 
-  // Build headers; on the server, attach Authorization from HTTP-only cookie
-  const serverAuth: Record<string, string> = !isClient
-    ? await (async () => {
-      const { cookies } = await import('next/headers')
-      const token = (await cookies()).get('auth_access_token')?.value
-      const h: Record<string, string> = {}
-      if (token) h['Authorization'] = `Bearer ${token}`
-      return h
-    })()
-    : {}
-
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...serverAuth,
-    ...(options?.headers ?? {}),
-  };
+  /**
+   * Get server-side auth headers from HTTP-only cookie
+   * Called inside makeRequest() to ensure fresh token after refresh
+   * @see https://nextjs.org/docs/app/api-reference/functions/cookies
+   */
+  async function getServerAuth(): Promise<Record<string, string>> {
+    if (isClient) return {}
+    
+    const { cookies } = await import('next/headers')
+    const token = (await cookies()).get('auth_access_token')?.value
+    const h: Record<string, string> = {}
+    if (token) h['Authorization'] = `Bearer ${token}`
+    return h
+  }
 
   async function makeRequest(): Promise<Response> {
+    // Recompute server auth headers to get fresh token after refresh
+    const serverAuth = await getServerAuth()
+    
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      ...serverAuth,
+      ...(options?.headers ?? {}),
+    }
+
     // Client-side: route through proxy (proxy attaches Authorization server-side)
     // Server-side: call backend directly with Authorization header
     const targetUrl = isClient

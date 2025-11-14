@@ -18,8 +18,7 @@ export function proxy(request: NextRequest) {
         '/signin',
         '/signup',
         '/confirm-email',
-        '/reset-password',
-        '/auth/callback',
+        '/reset-password'
     ]
 
     // Protected routes that require authentication
@@ -29,10 +28,18 @@ export function proxy(request: NextRequest) {
     ]
 
     // Check if route is public
-    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+    // Use exact match or trailing slash to prevent false positives
+    // e.g., /signin-help should not match /signin
+    const isPublicRoute = publicRoutes.some(route =>
+        pathname === route || pathname.startsWith(`${route}/`)
+    )
 
     // Check if route is protected
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+    // Use exact match or trailing slash to prevent false positives
+    // e.g., /dashboard-settings should not match /dashboard
+    const isProtectedRoute = protectedRoutes.some(route =>
+        pathname === route || pathname.startsWith(`${route}/`)
+    )
 
     // Check authentication by verifying both access token and user cookie exist
     // Security: Access token is httpOnly and cannot be forged

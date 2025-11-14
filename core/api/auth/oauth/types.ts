@@ -7,7 +7,7 @@ import { z } from "zod";
 export const OAuthRequestSchema = z.object({
   provider: z.string(),
   connection_id: z.string().optional(),
-  redirect_uri: z.string({ message: "redirect_uri must match the redirect_uri in your Workos Dashboard" }),
+  redirect_uri: z.url({ message: "redirect_uri must match the redirect_uri in your Workos Dashboard" }),
   state: z.string().optional(),
 })
 

@@ -45,6 +45,9 @@ export function DevDrawer() {
         } catch (error) {
             toast.error(`Failed to clear rate limit: ${error}`)
         }
+        finally {
+            setIsClearing(false)
+        }
     }
 
     const handleClearAll = async () => {

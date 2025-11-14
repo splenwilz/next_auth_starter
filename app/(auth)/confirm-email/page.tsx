@@ -28,7 +28,7 @@ import type { VerifyEmailActionResult } from '@/core/api/auth/verify-email/actio
 import { verifyEmailAction } from '@/core/api/auth/verify-email/actions'
 
 const OTPFormSchema = z.object({
-  pin: z
+  code: z
     .string()
     .min(6, {
       message: 'Your one-time password must be 6 characters.',
@@ -69,7 +69,7 @@ export default function ConfirmEmail() {
   const form = useForm<z.infer<typeof OTPFormSchema>>({
     resolver: zodResolver(OTPFormSchema),
     defaultValues: {
-      pin: '',
+      code: '',
     },
   })
 
@@ -209,14 +209,13 @@ export default function ConfirmEmail() {
 
             <FormField
               control={form.control}
-              name="pin"
+              name="code"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <InputOTP
                       maxLength={6}
                       {...field}
-                      name="code"
                     >
                       <InputOTPGroup className="flex gap-2 justify-center items-center mt-4 ml-6">
                         <InputOTPSlot index={0} />

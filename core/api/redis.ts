@@ -15,13 +15,16 @@ import { Redis } from '@upstash/redis'
  * - UPSTASH_REDIS_REST_URL
  * - UPSTASH_REDIS_REST_TOKEN
  */
-if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
+
+if (!redisUrl || !redisToken) {
     throw new Error(
         'Missing required environment variables: UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN'
     )
 }
 
 export const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    url: redisUrl,
+    token: redisToken,
 })
