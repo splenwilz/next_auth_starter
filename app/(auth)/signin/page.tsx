@@ -1,6 +1,16 @@
 
+import { Suspense } from 'react'
 import SigninForm from '@/components/Auth/SigninForm'
 import Image from 'next/image'
+
+function SigninFallback() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 w-full">
+      <div className="h-8 w-8 rounded-full border-2 border-custom-base-green border-t-transparent animate-spin" />
+      <p className="text-gray-600 mt-4">Loading signin form…</p>
+    </div>
+  )
+}
 
 export default function Signin() {
   return (
@@ -31,7 +41,9 @@ export default function Signin() {
         </div>
       </div>
       <div className="lg:w-1/2 w-full h-full flex justify-center">
-        <SigninForm />
+        <Suspense fallback={<SigninFallback />}>
+          <SigninForm />
+        </Suspense>
       </div>
     </div>
   )

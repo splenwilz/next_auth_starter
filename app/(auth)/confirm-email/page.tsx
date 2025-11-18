@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { XCircle, Loader2 } from 'lucide-react'
@@ -38,7 +38,7 @@ const OTPFormSchema = z.object({
     }),
 })
 
-export default function ConfirmEmail() {
+function ConfirmEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams?.get('token') ?? ''
@@ -252,5 +252,24 @@ export default function ConfirmEmail() {
         </Form>
       </div>
     </div>
+  )
+}
+
+function ConfirmEmailFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="text-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-custom-base-green" />
+        <p className="text-gray-600">Loading verification form…</p>
+      </div>
+    </div>
+  )
+}
+
+export default function ConfirmEmail() {
+  return (
+    <Suspense fallback={<ConfirmEmailFallback />}>
+      <ConfirmEmailContent />
+    </Suspense>
   )
 }

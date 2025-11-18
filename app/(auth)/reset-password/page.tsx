@@ -8,14 +8,14 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState, useActionState, useEffect } from "react";
+import { useState, useActionState, useEffect, Suspense } from "react";
 import { redirect, useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle, EyeIcon, EyeOffIcon, XCircleIcon } from "lucide-react";
 import { resetPasswordAction, type ResetPasswordActionResult } from "@/core/api/auth/reset-password/actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams?.get('token') ?? ''
@@ -178,4 +178,23 @@ export default function ResetPasswordPage() {
       </div>
     </div >
   );
+}
+
+function ResetPasswordFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="text-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-custom-base-green" />
+        <p className="text-gray-600">Loading reset password form…</p>
+      </div>
+    </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordFallback />}>
+      <ResetPasswordContent />
+    </Suspense>
+  )
 }
