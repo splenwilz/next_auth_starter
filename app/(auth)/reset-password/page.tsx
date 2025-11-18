@@ -27,6 +27,7 @@ function ResetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [password, setPassword] = useState('');
+  const [showFallback, setShowFallback] = useState(false)
 
   // Password validation rules
   const validations = {
@@ -48,9 +49,35 @@ function ResetPasswordContent() {
     }
   }, [state, router])
 
+  useEffect(() => {
+    if (!token) return
+
+    if (typeof window === 'undefined') return
+
+    const isMobile = /iphone|ipad|android/i.test(window.navigator.userAgent)
+
+    if (!isMobile) {
+      const immediate = window.setTimeout(() => setShowFallback(true), 0)
+      return () => window.clearTimeout(immediate)
+    }
+
+    const appUrl = `tryrack://auth/reset-password?token=${encodeURIComponent(token)}`
+    window.location.href = appUrl
+
+    const timeout = window.setTimeout(() => {
+      setShowFallback(true)
+    }, 1500)
+
+    return () => window.clearTimeout(timeout)
+  }, [token])
+
   if (!token) {
     redirect('/signin')
     return null
+  }
+
+  if (!showFallback) {
+    return <MobileRedirectLoading />
   }
 
   return (
@@ -178,6 +205,22 @@ function ResetPasswordContent() {
       </div>
     </div >
   );
+}
+
+function MobileRedirectLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="text-center space-y-3">
+        <Loader2 className="w-8 h-8 animate-spin text-custom-base-green mx-auto" />
+        <p className="text-gray-600 text-sm">
+          Launching the mobile app…
+        </p>
+        <p className="text-gray-500 text-xs">
+          If nothing happens, the reset form will appear shortly.
+        </p>
+      </div>
+    </div>
+  )
 }
 
 function ResetPasswordFallback() {
