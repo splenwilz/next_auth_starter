@@ -61,7 +61,7 @@ function ResetPasswordContent() {
       return () => window.clearTimeout(immediate)
     }
 
-    const appUrl = `tryrack://auth/reset-password?token=${encodeURIComponent(token)}`
+    const appUrl = `tryrackapp://auth/reset-password?token=${encodeURIComponent(token)}`
     window.location.href = appUrl
 
     const timeout = window.setTimeout(() => {
